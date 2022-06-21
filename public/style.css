@@ -1,0 +1,11 @@
+body {
+    background-color: rgb(177, 239, 177);
+    border: 2px solid yellow;
+    margin: 2px;
+}
+#sign {
+    background-color: #fff;
+    margin: 5px;
+    margin-left: 0px;
+    border: 1px black dotted;
+}
