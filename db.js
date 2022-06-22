@@ -9,17 +9,15 @@ const db = spicedPg(
 
 console.log("[db] connecting to:", database);
 
-module.exports.addSigners = () => {
-    console.log(
-        "[db]firstname",
-        firstname,
-        "[db]lastname",
-        lastname,
-        "[db]signature",
-        signatures
-    );
-    const q = `INSERT INTO signatures (first,last,signature) VALUES ($1,$2,$3)`;
-    const param = [firstname, lastname, signatures];
+module.exports.addUser = (first, last, email, password) => {
+    const q = `INSERT INTO users (first,last, email, password) VALUES ($1,$2,$3,$4) RETURNING *`;
+    const param = [first, last, email, password];
+    return db.query(q, param);
+};
+
+module.exports.addSigners = (first, last, signature) => {
+    const q = `INSERT INTO signatures (first,last,signature) VALUES ($1,$2,$3) RETURNING *`;
+    const param = [first, last, signature];
     return db.query(q, param);
 };
 
@@ -28,11 +26,13 @@ module.exports.getSigners = () => {
 };
 
 module.exports.countSigners = () => {
-    return db.query(`SELECT COUNT(id) FROM signatures`);
+    return db.query(
+        `SELECT first, last,(select count(id) FROM signatures) FROM signatures`
+    );
 };
 
 module.exports.getDataURL = (signaturesID) => {
-    const q = `SELECT signature FROM signatures WHERE id = $3`;
+    const q = `SELECT signature FROM signatures WHERE id = $1`;
     const param = [signaturesID];
     return db.query(q, param);
 };

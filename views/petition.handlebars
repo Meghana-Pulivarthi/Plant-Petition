@@ -3,13 +3,13 @@
         <h2>Error! Please Try Again.</h2>
     {{/if}}
 </div>
-<form>
+<form method="POST">
     <label for="fname">First name:</label><br />
     <input type="text" id="fname" name="fname" /><br />
     <label for="lname">Last name:</label><br />
     <input type="text" id="lname" name="lname" /><br />
     <canvas id="sign"></canvas><br />
-    <input type="hidden" name="signature" id="signature" value="" />
-    <button type="button">Submit</button>
+    <input type="hidden" name="signature" id="signature" />
+    <button>Submit</button>
 </form>
 <script src="index.js">Link To clientside js</script>
