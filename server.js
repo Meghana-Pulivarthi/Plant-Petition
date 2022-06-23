@@ -23,10 +23,11 @@ app.use((req, res, next) => {
     next();
 });
 //////////////////////Cookies////////////////////
-
+const cookie_secret =
+    process.env.cookie_secret || require("./secret.json").cookie_secret;
 app.use(
     cookieSession({
-        secret: `I'm always angry.`,
+        secret: cookie_secret,
         maxAge: 1000 * 60 * 60 * 24 * 14,
         sameSite: true,
     })
@@ -40,9 +41,42 @@ app.use((req, res, next) => {
     next();
 });
 ////////////To prevent clickjacking/////////////
+
 app.get("/", (req, res) => {
-    res.redirect("/petition");
+    res.redirect("/register");
 });
+
+//////////////////////////Get Register/////////////////////
+app.get("/register", (req, res) => {
+    res.render("register");
+});
+//////////////////////////Get Register/////////////////////
+
+//////////////////////////Post Register/////////////////////
+app.post("/register", (req, res) => {
+    //     call the bcrypt.hash function and pass it the password from req.body
+    // call a function to insert the hashed password that bcrypt.hash returned plus
+    // the first, last, and email from req.body into the database and create a new user
+    // after the query, put the newly created user's id into the session so that
+    // the user is logged in. Any time you want to check to see if a user is logged in you can check to see if req.session.userId exists
+});
+//////////////////////////Post Register/////////////////////
+//////////////////////////Get Login/////////////////////
+app.get("/login", (req, res) => {
+    res.render("login");
+});
+//////////////////////////Get Login/////////////////////
+
+//////////////////////////Post Login/////////////////////
+app.post("/login", (req, res) => {
+    db.addUser(req.body.email)
+        .then((result) => {})
+        .catch((err) => {
+            console.log("Error in add users", err);
+        });
+});
+//////////////////////////Post Login/////////////////////
+
 //////////////////////////Get Petition/////////////////////
 app.get("/petition", (req, res) => {
     console.log("running GET / petition");
@@ -67,7 +101,7 @@ app.post("/petition", (req, res) => {
             console.log("addSigners result", result);
 
             req.session.signed = true;
-            req.session.signaturesID = result.rows[0].id;
+            req.session.userID = result.rows[0].id;
             // console.log(result.rows[0].id);
             // if it worked successfully store the signature's id in the cookie and
             // redirect the user to thank-you
@@ -173,7 +207,7 @@ app.get("/logout", (req, res) => {
     req.session.signed = null;
     res.redirect("/petition");
 });
-app.listen(8080, () => {
+app.listen(process.env.PORT || 8080, () => {
     console.log("You got this petition");
 });
 
