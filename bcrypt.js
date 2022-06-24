@@ -1,15 +1,9 @@
-const bcrypt = require("./bcrypt");
+const bcrypt = require("bcryptjs");
 
-bcrypt
-    .hash(passwd)
-    .then(function (hash) {
-        console.log(hash);
-        return bcrypt.compare(passwd, hash);
-    })
-    .then(function (isCorrect) {
-        if (isCorrect) {
-            console.log("correct!");
-        } else {
-            console.log("WRONG!");
-        }
+exports.hash = (hashpassword) => {
+    return bcrypt.genSalt().then((salt) => {
+        return bcrypt.hash(hashpassword, salt);
     });
+};
+
+exports.compare = bcrypt.compare;
