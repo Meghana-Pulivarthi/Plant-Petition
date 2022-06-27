@@ -61,14 +61,9 @@ app.get("/register", (req, res) => {
 
 //////////////////////////Post Register/////////////////////
 app.post("/register", (req, res) => {
-    //     call the bcrypt.hash function and pass it the password from req.body
-    // call a function to insert the hashed password that bcrypt.hash returned plus
-    // the first, last, and email from req.body into the database and create a new user
-    // after the query, put the newly created user's id into the session so that
-    // the user is logged in. Any time you want to check to see if a user is logged in you can check to see if req.session.userId exists
+    console.log("pwd in register", req.body);
     bcrypt
         .hash(req.body.password)
-
         .then((hashpasswd) => {
             db.addUser(
                 req.body.fname,
@@ -79,7 +74,7 @@ app.post("/register", (req, res) => {
                 .then((result) => {
                     console.log("Result in bcrypt.hash", result.rows);
                     req.session.userID = result.rows[0].id;
-                    res.redirect("/petition");
+                    res.redirect("/profile");
                 })
                 .catch((err) => {
                     console.log("Error in  bcrypt hash", err);
@@ -92,22 +87,16 @@ app.post("/register", (req, res) => {
 //////////////////////////Post Register/////////////////////
 //////////////////////////Get Login/////////////////////
 app.get("/login", (req, res) => {
-    if (req.body.userID) {
-        res.render("petition");
-    } else {
-        res.render("login");
-    }
+    res.render("login");
 });
 //////////////////////////Get Login/////////////////////
 
 //////////////////////////Post Login/////////////////////
 app.post("/login", (req, res) => {
-    //             Pass req.body.email to a function that does a query to find user info by email
-    //REQ.BODY gets data from html
-    // console.log("req.body.email", req.body.email);
     db.getEmail(req.body.email)
         .then((result) => {
-            // console.log("result.rows[0].password", result.rows);
+            console.log("result.rows[0].password", result.rows[0].password);
+            console.log("req.body.password", req.body.password);
             bcrypt
                 .compare(req.body.password, result.rows[0].password)
                 .then((match) => {
@@ -116,7 +105,7 @@ app.post("/login", (req, res) => {
                         if (req.session.signatureID) {
                             res.redirect("/thanks");
                         } else {
-                            res.render("petititon");
+                            res.redirect("/petition");
                         }
                     } else {
                         res.render("login");
@@ -125,13 +114,6 @@ app.post("/login", (req, res) => {
                 .catch((err) => {
                     console.log("Error in match", err);
                 });
-            // Use bcrypt.compare to see if the password the user typed in the login form (req.body.password)
-            // is the same as the one that was hashed and stored in the database and returned from the above query.
-            // If there is no match, re-render the form with an error message
-            // If there is a match, log the user in. That is, set req.session.userId to the id returned by the above query.
-            // Tomorrow, we will learn how to make the query that finds the user info by email address
-            //also find the signature id from the user table. For now, we do not know if the user signed after they successfully log in. To find out you can do another query that finds the signature id from the signatures table by the user id. Once you have the signature id you can set req.session.signatureId
-            // If the user has signed, send them to /thanks after log in. If the user has not signed, send them to /petition after log in.
         })
         .catch((err) => {
             console.log("Error in get email", err);
@@ -143,14 +125,10 @@ app.post("/login", (req, res) => {
 app.get("/petition", (req, res) => {
     console.log("running GET / petition");
 
-    // has my user already signed the petition? -> check cookie
-    // if yes redirect to thank you
     if (req.session.signatureID) {
         console.log("redirect thanks   ");
         res.redirect("/thanks");
-    }
-    // if no:
-    else {
+    } else {
         res.render("petition");
     }
 });
@@ -158,22 +136,16 @@ app.get("/petition", (req, res) => {
 
 ////////////////////////Post Petition////////////////
 app.post("/petition", (req, res) => {
-    // console.log("req.session.userID: ", req.session.userID);
-    // console.log("req.body.signature: ", req.body.signature);
     db.addSigners(req.body.signature, req.session.userID)
         .then((result) => {
-            // logic to insert your user's values into the signatures table
             // console.log("addSigners result", result);
 
             req.session.signatureID = result.rows[0].id;
             console.log(result.rows[0].id);
-            // if it worked successfully store the signature's id in the cookie and
-            // redirect the user to thank-you
             res.redirect("/thanks");
         })
         .catch((err) => {
             console.log("err in db.addSigners:", err);
-            // if anything went wrong rerender the petition template with the error message
 
             res.render("petition");
         });
@@ -185,7 +157,6 @@ app.post("/petition", (req, res) => {
 
 app.get("/thanks", (req, res) => {
     console.log("runnning GET / thanks");
-    // has my user already signed the petition? -> check cookie
     let dataUrl;
     let numOfSigners;
     ///////////////IMG TO URL///////////
@@ -202,14 +173,7 @@ app.get("/thanks", (req, res) => {
 
     db.countSigners()
         .then((result) => {
-            // console.log("result in countSigners: ", result);
-
-            // console.log("req.session in countSigners: ", req.session);
             if (req.session.signatureID) {
-                // if the user has signed obtain the user's signature from the db
-                // and find out how many people have signed the petition
-                // render the thank you template, pass along the user's signature DataURL
-                // & number of signers
                 ///////////COUNT SIGNERS///////////
                 db.getSigners()
                     .then(({ rows }) => {
@@ -227,7 +191,6 @@ app.get("/thanks", (req, res) => {
                     });
                 ///////////COUNT SIGNERS///////////
             } else {
-                // if the user hasn't signed -> redirect to petition
                 console.log("redirect petition");
                 res.redirect("/petition");
             }
@@ -248,16 +211,10 @@ app.get("/signers", (req, res) => {
         .then((result) => {
             console.log("result in getSigners: ", result);
             if (req.session.signed == true) {
-                // if  the user has signed, get the information on first & last of
-                // everyone who sigend the petition from the db
-                // pass it along to your template render
-                // should render the signers template
                 res.render("signers", {
                     results: result.rows,
                 });
             } else {
-                // if the user hasn't signed -> redirect to petition
-
                 res.redirect("/petition");
             }
         })
@@ -269,6 +226,7 @@ app.get("/signers", (req, res) => {
 //////////////////////////Get signers/////////////////////
 
 app.get("/logout", (req, res) => {
+    // req.session = null - destroys a session
     req.session = null;
     res.redirect("/login");
 });
@@ -276,11 +234,77 @@ app.listen(process.env.PORT || 8080, () => {
     console.log("You got this petition");
 });
 
-// req.session = null - destroys a session
+app.get("/profile", (req, res) => {
+    //     Redirected to immediately after successful registration
+    // Renders a template with a form
+    // if (req.session.userID) {
+    res.render("profile");
+    // } else {
+    //     res.render("/login");
+    // }
+});
 
-// app.get("/profile", (req, res) => {
-//     res.render("/profile");
+app.post("/profile", (req, res) => {
+    if (req.body.age == "" && req.body.city == "" && req.body.url == "") {
+        res.redirect("/petition");
+    } else {
+        let url = req.body.url;
+        if (
+            !url.startsWith("http://") &&
+            !url.startsWith("https://") &&
+            !url.startsWith("//")
+        ) {
+            url = "";
+        }
+        db.addProfiles(req.body.age, req.body.city, url, req.session.userID)
+            .then((result) => {
+                req.session.signatureID = result.rows[0].id;
+                console.log(result.rows[0].id);
+                res.redirect("/petition");
+            })
+            .catch((err) => {
+                console.log("err in db.addProfiles:", err);
+
+                res.render("profile");
+            });
+    }
+});
+app.get("/signers/:city", (req, res) => {
+    if (req.session.signatureID) {
+        db.getCity(req.params.city)
+            .then((result) => {
+                console.log("result in signers/:city", result.rows);
+                const results = result.rows;
+                res.render("signers", {
+                    results,
+                    city: req.params.city,
+                });
+            })
+            .catch((err) => {
+                console.log("error in signers/:city", err);
+            });
+    } else {
+        res.redirect("/petition");
+    }
+});
+
+// app.get("/edit", (req, res) => {
+//     res.render("edit");
 // });
 
-// app.post("profile", (req, res) => {});
-// app.get("/signers/:cit", (req, res) => {});
+// app.post("/edit", (req, res) => {
+//     if (req.body.password != "") {
+//         db.editWithoutPass(
+//             req.body.fname,
+//             req.body.lname,
+//             req.body.email,
+//             req.body.password
+//         )
+//             .then(() => {})
+//             .catch((err) => {});
+//     } else {
+//         db.editWithPass(req.body.fname, req.body.lname, req.body.email)
+//             .then(() => {})
+//             .catch((err) => {});
+//     }
+// });

@@ -9,7 +9,7 @@ CREATE TABLE users (
   first VARCHAR NOT NULL CHECK (first != ''),
   last VARCHAR NOT NULL CHECK (last != ''),
   email VARCHAR NOT NULL CHECK (email !='') UNIQUE,
-  password VARCHAR NOT Null CHECK (password !='')
+  password VARCHAR NOT NULL CHECK (password !='')
 );
 
 CREATE TABLE signatures (
@@ -26,8 +26,3 @@ city VARCHAR,
 url VARCHAR
 );
 
--- UPSERT 
--- INSERT INTO cators(name,age,oscars)
--- VALUES('INGRID', 67, 4)
--- ON CONFLICT (id) 
--- DO UPDATE SET age=67, oscars=4;

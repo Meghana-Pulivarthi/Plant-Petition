@@ -18,10 +18,14 @@ module.exports.addUser = (fname, lname, email, password) => {
     return db.query(q, param);
 };
 
-module.exports.getEmail = () => {
-    return db.query(`SELECT email,password FROM users
-    JOIN signatures
-    ON signatures.users_id = users.id`);
+module.exports.getEmail = (email) => {
+    return db.query(
+        `SELECT users.email, users.password, signatures.id FROM users
+    LEFT JOIN signatures
+    ON signatures.users_id = users.id
+    WHERE email = $1`,
+        [email]
+    );
 };
 
 //----------------------Signers Table-----------------\\
@@ -37,7 +41,12 @@ module.exports.countSigners = () => {
 
 exports.getSigners = () => {
     return db.query(
-        `SELECT users.first, users.last, signatures.signature FROM users JOIN signatures ON users.id = signatures.users_id`
+        `SELECT users.first, users.last, signatures.signature, profiles.age, profiles.city, profiles.url 
+        FROM users
+        JOIN signatures
+        ON users.id = signatures.users_id
+        JOIN profiles
+        ON users.id = profiles.users_id`
     );
 };
 
@@ -47,13 +56,46 @@ module.exports.getDataURL = (usersID) => {
     return db.query(q, param);
 };
 
-//----------------------Signers Table-----------------\\
+//----------------------Profiles Table-----------------\\
 module.exports.addProfiles = (age, city, url, users_id) => {
     const q = `INSERT INTO profiles (age,city,url,users_id) VALUES ($1,$2,$3,$4)`;
     const param = [age, city, url, users_id];
-    return q, param;
+    return db.query(q, param);
 };
 
-module.exports.getCity = () => {
-    return db.query(`SELECT city FROM profiles WHERE LOWER(CITY) = LOWER($1)`);
+module.exports.getCity = (city) => {
+    return db.query(
+        ` SELECT users.first, users.last, signatures.signature, profiles.age, profiles.city, profiles.url 
+        FROM users
+        JOIN signatures
+        ON users.id = signatures.users_id
+        JOIN profiles
+        ON users.id = profiles.users_id WHERE LOWER(CITY) = LOWER($1)`,
+        [city]
+    );
 };
+
+// module.exports.editProfile = () => {
+//     return db.query(`SELECT users.first,users.last,users.email,profiles.*
+//      FROM users
+//      JOIN profiles
+//      ON users.id=profiles.users_id`);
+// };
+// INSERT INTO cators(name,age,oscars)
+//  VALUES('INGRID', 67, 4)
+// ON CONFLICT (id)
+// DO UPDATE SET age=67, oscars=4;
+
+// module.exports.editWithoutPass = () => {
+//     const q = `INSERT INTO users (first,last,email,password) VALUES ($1,$2,$3,$4)`;
+//     const a = `INSERT INTO profiles (first,last,email,password) VALUES($1,$2,$3,$4) ON CONFLICT (id) DO UPDATE
+//     SET first = {{first}}, last = {{last}},  email = {{email}}, password = {{password}} `;
+//     return db.query(q, a);
+// };
+
+// module.exports.editWithPass = () => {
+//     const q = `INSERT INTO users (first,last,email) VALUES ($1,$2,$3)`;
+//     const a = `INSERT INTO profiles (first,last,email) VALUES($1,$2,$3) ON CONFLICT (id) DO UPDATE
+//     SET SET first = {{first}}, last = {{last}},  email = {{email}} `;
+//     return db.query(q, a);
+// };
