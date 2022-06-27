@@ -95,8 +95,8 @@ app.get("/login", (req, res) => {
 app.post("/login", (req, res) => {
     db.getEmail(req.body.email)
         .then((result) => {
-            console.log("result.rows[0].password", result.rows[0].password);
-            console.log("req.body.password", req.body.password);
+            // console.log("result.rows[0].password", result.rows[0].password);
+            // console.log("req.body.password", req.body.password);
             bcrypt
                 .compare(req.body.password, result.rows[0].password)
                 .then((match) => {
@@ -141,7 +141,7 @@ app.post("/petition", (req, res) => {
             // console.log("addSigners result", result);
 
             req.session.signatureID = result.rows[0].id;
-            console.log(result.rows[0].id);
+            // console.log(result.rows[0].id);
             res.redirect("/thanks");
         })
         .catch((err) => {
@@ -160,11 +160,11 @@ app.get("/thanks", (req, res) => {
     let dataUrl;
     let numOfSigners;
     ///////////////IMG TO URL///////////
-    db.getDataURL(req.session.usersID)
+    db.getDataURL(req.session.signatureID)
         .then((result) => {
             console.log("dataurl result", result);
             console.log("result.rows", result.rows[0]);
-            dataUrl = result.rows[0];
+            dataUrl = result.rows[0].signature;
         })
         .catch((err) => {
             console.log("err in db.getDataURL:", err);
@@ -210,7 +210,7 @@ app.get("/signers", (req, res) => {
     db.getSigners()
         .then((result) => {
             console.log("result in getSigners: ", result);
-            if (req.session.signed == true) {
+            if (req.session.signatureID) {
                 res.render("signers", {
                     results: result.rows,
                 });

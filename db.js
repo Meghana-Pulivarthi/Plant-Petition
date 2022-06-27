@@ -35,24 +35,26 @@ module.exports.addSigners = (signature, users_id) => {
     return db.query(q, param);
 };
 
-module.exports.countSigners = () => {
-    return db.query(`SELECT * FROM signatures`);
+module.exports.countSigners = (signatureID) => {
+    const q = `SELECT COUNT(ID) FROM signatures WHERE id=$1`;
+    const param = [signatureID];
+    return db.query(q, param);
 };
 
 exports.getSigners = () => {
     return db.query(
-        `SELECT users.first, users.last, signatures.signature, profiles.age, profiles.city, profiles.url 
+        `SELECT users.first, users.last, profiles.age, profiles.city, profiles.url 
         FROM users
-        JOIN signatures
+        LEFT OUTER JOIN signatures
         ON users.id = signatures.users_id
         JOIN profiles
         ON users.id = profiles.users_id`
     );
 };
 
-module.exports.getDataURL = (usersID) => {
-    const q = `SELECT signature,first,last FROM signatures JOIN users ON users.id = signatures.users_id WHERE users.id = $1`;
-    const param = [usersID];
+module.exports.getDataURL = (signatureID) => {
+    const q = `SELECT signature FROM signatures WHERE id=$1`;
+    const param = [signatureID];
     return db.query(q, param);
 };
 
@@ -64,15 +66,12 @@ module.exports.addProfiles = (age, city, url, users_id) => {
 };
 
 module.exports.getCity = (city) => {
-    return db.query(
-        ` SELECT users.first, users.last, signatures.signature, profiles.age, profiles.city, profiles.url 
+    const q = ` SELECT users.first, users.last, profiles.age, profiles.city, profiles.url 
         FROM users
-        JOIN signatures
-        ON users.id = signatures.users_id
-        JOIN profiles
-        ON users.id = profiles.users_id WHERE LOWER(CITY) = LOWER($1)`,
-        [city]
-    );
+        LEFT OUTER JOIN profiles
+        ON users.id = profiles.users_id WHERE LOWER(CITY) = LOWER($1)`;
+    const param = [city];
+    return db.query(q, param);
 };
 
 // module.exports.editProfile = () => {

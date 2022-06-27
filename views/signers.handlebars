@@ -3,9 +3,10 @@
     {{#results}}
         <li>
             {{#if url}}
-            <a href=`{{url}}`>{{fname}}{{lname}}</a> {{age}} <a href="/signers/:{{city}}">{{city}} </a>
-                        {{#else}}
-{{fname}} {{lname}} {{age}} <a href="/signers/:{{city}}">{{city}} </a>
+            <a href=`{{url}}`>{{first}}{{last}}</a> {{age}} 
+            <a href="/signers/{{city}}">{{city}} </a>
+                        {{else}}
+{{first}} {{last}} {{age}} <a href="/signers/:{{city}}">{{city}} </a>
             {{/if}}
             </li>
     {{/results}}
