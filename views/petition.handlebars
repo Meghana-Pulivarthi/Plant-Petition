@@ -1,15 +1,15 @@
+<p id="Petition">Sign the petition below.</p>
 <div id="error">
     {{#if error}}
         <h2>Error! Please Try Again.</h2>
     {{/if}}
 </div>
-<form method="POST">
-    {{! <label for="fname">First name:</label><br />
-    <input type="text" id="fname" name="fname" /><br />
-    <label for="lname">Last name:</label><br />
-    <input type="text" id="lname" name="lname" /><br /> }}
-    <canvas id="sign"></canvas><br />
-    <input type="hidden" name="signature" id="signature" />
-    <button>Submit</button>
-</form>
+<div class="petition">
+    <form method="POST">
+        <canvas id="sign"></canvas><br />
+        <input type="hidden" name="signature" id="signature" /><br />
+        <button>Submit your signature.</button>
+    </form>
+
+</div>
 <script src="index.js">Link To clientside js</script>

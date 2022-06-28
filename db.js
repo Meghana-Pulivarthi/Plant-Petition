@@ -109,17 +109,3 @@ module.exports.editProfiles = (age, city, url, userID) => {
 module.exports.deleteSignature = (id) => {
     return db.query(`DELETE FROM signatures WHERE id = $1`, [id]);
 };
-
-//Deleting Profiles
-
-// module.exports.deleteSigners = (users_id) => {
-//     return db.query(`DELETE FROM users WHERE users_id = $1`, [users_id]);
-// };
-
-// module.exports.deleteProfiles = (users_id) => {
-//     return db.query(`DELETE FROM profiles WHERE users_id = $1`, [users_id]);
-// };
-
-// module.exports.deleteUsers = (id) => {
-//     return db.query(`DELETE FROM users WHERE id = $1`, [id]);
-// };

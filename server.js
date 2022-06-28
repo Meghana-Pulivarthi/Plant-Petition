@@ -95,8 +95,9 @@ app.get("/login", (req, res) => {
 app.post("/login", (req, res) => {
     db.getEmail(req.body.email)
         .then((result) => {
-            // console.log("result.rows[0].password", result.rows[0].password);
-            // console.log("req.body.password", req.body.password);
+            console.log("result.rows[0]", result.rows[0]);
+            console.log("result.rows[0].password", result.rows[0].password);
+            console.log("req.body.password", req.body.password);
             bcrypt
                 .compare(req.body.password, result.rows[0].password)
                 .then((match) => {
@@ -251,18 +252,15 @@ app.post("/profile", (req, res) => {
         let url = req.body.url;
         if (url === null || url === "") {
             console.log("No url.");
-            return url;
         } else if (
             url.startsWith("http://") ||
             url.startsWith("https://") ||
             url.startsWith("//")
         ) {
             console.log("Expected URL ");
-            return url;
         } else {
             url = "https://" + url;
             console.log("url with https:// ", url);
-            return url;
         }
 
         db.addProfiles(req.body.age, req.body.city, url, req.session.userID)
@@ -367,10 +365,22 @@ app.post("/edit", (req, res) => {
                         req.session.userID
                     )
                     .then(() => {
+                        if (url === null || url === "") {
+                            console.log("No url.");
+                        } else if (
+                            url.startsWith("http://") ||
+                            url.startsWith("https://") ||
+                            url.startsWith("//")
+                        ) {
+                            console.log("Expected URL ");
+                        } else {
+                            url = "https://" + url;
+                            console.log("url with https:// ", url);
+                        }
                         db.editProfiles(
                             req.body.age,
                             req.body.city,
-                            req.body.url,
+                            url,
                             req.session.userID
                         );
                         res.redirect("/petition");

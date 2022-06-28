@@ -1,5 +1,11 @@
-<h1>Thank you for signing up 😊</h1>
-<img src="{{dataUrl}}" alt="Image of Signature" />
-<a href="/signers">People who signed {{numOfSigners}}!</a>
-<a href="/edit">Edit your profile</a>
-<a href="/delete">Delete your signature.</a>
+<p id="thanks">Thank you for signing up 😊</p>
+<img id="thanksimg"src="{{dataUrl}}" alt="Image of Signature" /><br />
+<div class="Thanks">
+    <ul><li id="1">
+            <a href="/signers">People who signed this petition -
+                {{numOfSigners}}.</a><br />
+        </li>
+        <li id="2"><a href="/edit">Edit your profile.</a><br />
+        </li>
+        <li id="3"><a href="/delete">Delete your signature.</a></li></ul>
+</div>
