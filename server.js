@@ -61,7 +61,7 @@ app.get("/register", (req, res) => {
 
 //////////////////////////Post Register/////////////////////
 app.post("/register", (req, res) => {
-    console.log("pwd in register", req.body);
+    // console.log("pwd in register", req.body);
     bcrypt
         .hash(req.body.password)
         .then((hashpasswd) => {
@@ -72,7 +72,7 @@ app.post("/register", (req, res) => {
                 hashpasswd
             )
                 .then((result) => {
-                    console.log("Result in bcrypt.hash", result.rows);
+                    // console.log("Result in bcrypt.hash", result.rows);
                     req.session.userID = result.rows[0].id;
                     res.redirect("/profile");
                 })
@@ -101,6 +101,7 @@ app.post("/login", (req, res) => {
                 .compare(req.body.password, result.rows[0].password)
                 .then((match) => {
                     if (match) {
+                        console.log("result.rows[0].id", result.rows[0]);
                         req.session.userID = result.rows[0].id;
                         if (req.session.signatureID) {
                             res.redirect("/thanks");
@@ -126,7 +127,6 @@ app.get("/petition", (req, res) => {
     console.log("running GET / petition");
 
     if (req.session.signatureID) {
-        console.log("redirect thanks   ");
         res.redirect("/thanks");
     } else {
         res.render("petition");
@@ -162,8 +162,8 @@ app.get("/thanks", (req, res) => {
     ///////////////IMG TO URL///////////
     db.getDataURL(req.session.signatureID)
         .then((result) => {
-            console.log("dataurl result", result);
-            console.log("result.rows", result.rows[0]);
+            // console.log("dataurl result", result);
+            // console.log("result.rows", result.rows[0]);
             dataUrl = result.rows[0].signature;
         })
         .catch((err) => {
@@ -249,13 +249,22 @@ app.post("/profile", (req, res) => {
         res.redirect("/petition");
     } else {
         let url = req.body.url;
-        if (
-            !url.startsWith("http://") &&
-            !url.startsWith("https://") &&
-            !url.startsWith("//")
+        if (url === null || url === "") {
+            console.log("No url.");
+            return url;
+        } else if (
+            url.startsWith("http://") ||
+            url.startsWith("https://") ||
+            url.startsWith("//")
         ) {
-            url = "";
+            console.log("Expected URL ");
+            return url;
+        } else {
+            url = "https://" + url;
+            console.log("url with https:// ", url);
+            return url;
         }
+
         db.addProfiles(req.body.age, req.body.city, url, req.session.userID)
             .then((result) => {
                 req.session.signatureID = result.rows[0].id;
@@ -288,23 +297,114 @@ app.get("/signers/:city", (req, res) => {
     }
 });
 
-// app.get("/edit", (req, res) => {
-//     res.render("edit");
-// });
+app.get("/edit", (req, res) => {
+    if (!req.session.userID) {
+        res.redirect("/register");
+    }
+    db.profile(req.session.userID)
+        .then((result) => {
+            console.log("result.rows[0]", result.rows[0]);
+            res.render("edit", {
+                results: result.rows[0],
+            });
+        })
+        .catch((err) => {
+            console.log("Error in profile", err);
+        });
+});
 
-// app.post("/edit", (req, res) => {
-//     if (req.body.password != "") {
-//         db.editWithoutPass(
-//             req.body.fname,
-//             req.body.lname,
-//             req.body.email,
-//             req.body.password
-//         )
-//             .then(() => {})
-//             .catch((err) => {});
-//     } else {
-//         db.editWithPass(req.body.fname, req.body.lname, req.body.email)
-//             .then(() => {})
-//             .catch((err) => {});
-//     }
-// });
+app.post("/edit", (req, res) => {
+    if (req.body.password === "") {
+        console.log("req.body.fname,", req.body);
+        db.editUserWithoutPass(
+            req.body.fname,
+            req.body.lname,
+            req.body.email,
+            req.session.userID
+        )
+            .then(() => {
+                let url = req.body.url;
+                if (url === null || url === "") {
+                    console.log("No url.");
+                } else if (
+                    url.startsWith("http://") ||
+                    url.startsWith("https://") ||
+                    url.startsWith("//")
+                ) {
+                    console.log("Expected URL ");
+                } else {
+                    url = "https://" + url;
+                    console.log("url with https:// ", url);
+                }
+
+                db.editProfiles(
+                    req.body.age,
+                    req.body.city,
+                    url,
+                    req.session.userID
+                )
+                    .then(() => {
+                        res.redirect("/petition");
+                    })
+                    .catch((err) => {
+                        console.log("Error in eidtProfiles withoutpass", err);
+                    });
+            })
+            .catch((err) => {
+                console.log("Error in editProfiles withoutpass", err);
+            });
+    } else {
+        bcrypt
+            .hash(req.body.password)
+            .then((hash) => {
+                const hashedpwd = hash;
+                return db
+                    .editUserWithPass(
+                        req.body.fname,
+                        req.body.lname,
+                        req.body.email,
+                        hashedpwd,
+                        req.session.userID
+                    )
+                    .then(() => {
+                        db.editProfiles(
+                            req.body.age,
+                            req.body.city,
+                            req.body.url,
+                            req.session.userID
+                        );
+                        res.redirect("/petition");
+                    })
+                    .catch((err) => {
+                        console.log("Error in edit profile", err);
+                    });
+            })
+            .catch((err) => {
+                console.log("Eroor in bcrypt eidtUserWithPass", err);
+            });
+    }
+});
+
+//DELETE SIGNATURE
+
+app.get("/delete", (req, res) => {
+    // if (!req.session.userID) {
+    //     res.redirect("/register");
+    // } else
+    if (!req.session.signatureID) {
+        res.redirect("/petition");
+    } else {
+        res.render("delete");
+    }
+});
+app.post("/delete", (req, res) => {
+    db.deleteSignature(req.session.signatureID)
+        .then(() => {
+            req.session.userID = null;
+            req.session.signatureID = null;
+            res.redirect("/petition");
+        })
+        .catch((err) => {
+            console.log("Error in delete", err);
+        });
+});

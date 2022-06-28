@@ -2,21 +2,22 @@
 {{#if err}}
     <h1>Error, please try again.</h1>
 {{/if}}
-
-<form method="POST">
-    <label for="fname">First name:</label><br />
-    <input type="text" id="fname" name="fname" /><br />
-    <label for="lname">Last name:</label><br />
-    <input type="text" id="lname" name="lname" /><br />
-    <label for="email">Email:</label><br />
-    <input type="text" id="email" name="email" /><br />
-    <label for="password">Password:</label><br />
-    <input type="password" id="password" name="password" /><br />
-    <label for="age">Age:</label><br />
-    <input type="text" id="age" name="age" /><br />
-    <label for="city">City:</label><br />
-    <input type="text" id="city" name="city" /><br />
-    <label for="url">URL:</label><br />
-    <input type="text" id="url" name="url" /><br />
-    <button>Submit</button>
-</form>
+{{#results}}
+    <form method="POST">
+        <label for="fname">First name:</label><br />
+        <input type="text" id="fname" name="fname" value={{first}} /><br />
+        <label for="lname">Last name:</label><br />
+        <input type="text" id="lname" name="lname" value={{last}} /><br />
+        <label for="email">Email:</label><br />
+        <input type="text" id="email" name="email" value={{email}} /><br />
+        <label for="password">Password:</label><br />
+        <input type="password" id="password" name="password" /><br />
+        <label for="age">Age:</label><br />
+        <input type="text" id="age" name="age" value={{age}} /><br />
+        <label for="city">City:</label><br />
+        <input type="text" id="city" name="city" value={{city}} /><br />
+        <label for="url">URL:</label><br />
+        <input type="text" id="url" name="url" value={{url}} /><br />
+        <button>Submit</button>
+    </form>
+{{/results}}
